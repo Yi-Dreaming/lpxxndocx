@@ -47,6 +47,48 @@ Cell *Table::cell(int rowIndex, int colIndex)
     return row->cells().at(colIndex);
 }
 
+
+/**
+ * @brief Table::merge 合并一个区域
+ * @param startRowIdx 左上角的行索引
+ * @param startColIdx 左上角的列索引
+ * @param endRowIdx 右下角的行索引
+ * @param endColIdx 右小角的列索引
+ * @return
+ */
+Cell *Table::merge(int startRowIdx, int startColIdx, int endRowIdx, int endColIdx)
+{
+    Cell * firstMergeCell = cell(startRowIdx, startColIdx);
+    bool hasAddParagraph = true;// 一个区域合并后，只添加一个段落，防止每两两单元格合并都添加段落，导致合并后段落太多。
+    for(int i = startRowIdx; i <= endRowIdx;i++)
+    {
+        // 先合并一行
+        auto mergecell = cell(i, startColIdx);
+        for(int j = startColIdx+1; j <= endColIdx; j++)
+        {
+            if(hasAddParagraph)
+                mergecell = mergecell->merge(cell(i, j), false);
+            else
+            {
+                hasAddParagraph = true;
+                mergecell = mergecell->merge(cell(i, j));
+            }
+        }
+        if(i == startRowIdx)
+            firstMergeCell = mergecell;
+        else
+        {
+            if(hasAddParagraph)
+            firstMergeCell = firstMergeCell->merge(mergecell, false);
+            else
+            {
+                hasAddParagraph = true;
+                firstMergeCell = firstMergeCell->merge(mergecell);
+            }
+        }
+    }
+    return firstMergeCell;
+}
 Table::~Table()
 {
     delete m_ctTbl;
@@ -59,7 +101,8 @@ Table::~Table()
 Column *Table::addColumn()
 {
     QDomElement gridCol = m_ctTbl->m_tblGrid->addGridCol();
-    for (Row *row : m_rows) {
+    for (Row *row : m_rows)
+    {
         row->addTc();
     }
     return new Column(gridCol, m_ctTbl->m_tblGrid->count(), this);
@@ -199,7 +242,23 @@ void Row::loadExistElement()
 void Row::addTc()
 {
     QDomElement celEle = m_dom->createElement(strtblCell);
+    //20230915 修改：增加设置默认列宽度为4cm（2268）
+    QDomElement tcPr = m_dom->createElement("w:tcPr");
+    QDomElement tcW = m_dom->createElement("w:tcW");
+    tcW.setAttribute("w:w","2268");
+    tcW.setAttribute("w:type","dxa");
+    tcPr.appendChild(tcW);
+    QDomElement vAlign = m_dom->createElement("w:vAlign");
+    vAlign.setAttribute("w:val","center"); // 表格的单元格垂直居中
+    tcPr.appendChild(vAlign);
+    celEle.appendChild(tcPr);
+
+    // 不加这两句的话，可能会提示文件格式不正确，如果加上这两句在调用table.cell.addText后，单元格内多出一段换行
+//    QDomElement wp = m_dom->createElement("w:p");
+//    celEle.appendChild(wp);
+
     Cell *cell = new Cell(celEle, this);
+    cell->addParagraph();
     m_cells.append(cell);
     m_ele.appendChild(celEle);
 }
@@ -263,6 +322,19 @@ Paragraph *Cell::addParagraph(const QString &text, const QString &style)
 
 void Cell::addText(const QString &text)
 {
+
+    // 设置单元格无缩进，且水平居中
+//    QDomElement wpPr = m_dom->createElement("w:pPr");
+//    QDomElement wind = m_dom->createElement("w:ind");
+//    wind.setAttribute("w:firstLineChars","0");
+//    wind.setAttribute("w:firstLine","0");
+//    wpPr.appendChild(wind);
+//    QDomElement wjc = m_dom->createElement("w:jc");
+//    wjc.setAttribute("w:val", "center");
+//    wpPr.appendChild(wjc);
+//    m_currentpara->m_pEle->appendChild(wpPr);
+
+    qDebug()<<m_currentpara;
     m_currentpara->addRun(text);
 }
 
@@ -284,11 +356,11 @@ Table *Cell::addTable(int rows, int cols, const QString &style)
     return table;
 }
 
-Cell *Cell::merge(Cell *other)
+Cell *Cell::merge(Cell *other, bool isAddParagraph)
 {
     QSharedPointer<CT_Tc> tc = this->m_tc;
     QSharedPointer<CT_Tc> tc2 = other->m_tc;
-    CT_Tc *tcReturn = tc->merge(tc2);
+    CT_Tc *tcReturn = tc->merge(tc2, isAddParagraph);
     return tcReturn->m_cell;
 }
 

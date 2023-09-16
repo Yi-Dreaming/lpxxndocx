@@ -40,6 +40,7 @@ void CT_Tbl::setStyle(const QString &style)
         QDomNode n = m_tblEle.firstChild();
         m_tblEle.insertBefore(styleEle, n);
     }
+    qDebug()<<"setStyle:"<<style;
     m_style->setStyle(style);
 }
 
@@ -62,6 +63,7 @@ CT_TblGrid::CT_TblGrid(QDomDocument *dom, const QDomElement &ele)
 QDomElement CT_TblGrid::addGridCol()
 {
     QDomElement gridcol = m_dom->createElement(QStringLiteral("w:gridCol"));
+    gridcol.setAttribute("w:w","2268"); // 设置每一列的默认宽度为4cm
     m_element.appendChild(gridcol);
     ++cols;
     return gridcol;
@@ -149,12 +151,57 @@ void CT_TblPr::checkStyleElement()
     if (m_tblStyle.isNull()) {
         m_tblStyle = m_dom->createElement(strtblStyle);
         m_element.appendChild(m_tblStyle);
+        m_border = m_dom->createElement("w:tblBorders");
+        m_element.appendChild(m_border);
+        QDomElement m_topBorder = m_dom->createElement("w:top");
+        m_topBorder.setAttribute("w:val","single");
+        m_topBorder.setAttribute("w:sz","4");
+        m_topBorder.setAttribute("w:space","0");
+        m_topBorder.setAttribute("w:color","auto");
+
+        QDomElement m_leftBorder = m_dom->createElement("w:left");
+        m_leftBorder.setAttribute("w:val","single");
+        m_leftBorder.setAttribute("w:sz","4");
+        m_leftBorder.setAttribute("w:space","0");
+        m_leftBorder.setAttribute("w:color","auto");
+
+        QDomElement m_bottomBorder = m_dom->createElement("w:bottom");
+        m_bottomBorder.setAttribute("w:val","single");
+        m_bottomBorder.setAttribute("w:sz","4");
+        m_bottomBorder.setAttribute("w:space","0");
+        m_bottomBorder.setAttribute("w:color","auto");
+
+        QDomElement m_rightBorder = m_dom->createElement("w:right");
+        m_rightBorder.setAttribute("w:val","single");
+        m_rightBorder.setAttribute("w:sz","4");
+        m_rightBorder.setAttribute("w:space","0");
+        m_rightBorder.setAttribute("w:color","auto");
+
+        QDomElement m_insideHBorder = m_dom->createElement("w:insideH");
+        m_insideHBorder.setAttribute("w:val","single");
+        m_insideHBorder.setAttribute("w:sz","4");
+        m_insideHBorder.setAttribute("w:space","0");
+        m_insideHBorder.setAttribute("w:color","auto");
+
+        QDomElement m_insideVBorder = m_dom->createElement("w:insideV");
+        m_insideVBorder.setAttribute("w:val","single");
+        m_insideVBorder.setAttribute("w:sz","4");
+        m_insideVBorder.setAttribute("w:space","0");
+        m_insideVBorder.setAttribute("w:color","auto");
+        m_border.appendChild(m_topBorder);
+        m_border.appendChild(m_leftBorder);
+        m_border.appendChild(m_bottomBorder);
+        m_border.appendChild(m_rightBorder);
+        m_border.appendChild(m_insideHBorder);
+        m_border.appendChild(m_insideVBorder);
+
     }
 }
 
 void CT_TblPr::checkAlignment()
 {
     if (m_jcAlignment.isNull()) {
+        qDebug()<<"checkAlignment";
         m_jcAlignment = m_dom->createElement(strJc);
         m_element.appendChild(m_jcAlignment);
     }
@@ -174,8 +221,9 @@ CT_Tc::CT_Tc(Cell *cell, const QDomElement &ele)
 /*!
  * \brief 合并单元格
  * \param other
+ * isAddParagraph:为false时，合并单元格时，不会增加很多换行，合并完后还是一行的内容
  */
-CT_Tc * CT_Tc::merge(QSharedPointer<CT_Tc> other)
+CT_Tc * CT_Tc::merge(QSharedPointer<CT_Tc> other, bool isAddParagraph)
 {
     int top, left, height, width;
     spanDimensions(other, top, left, height, width);
@@ -189,7 +237,8 @@ CT_Tc * CT_Tc::merge(QSharedPointer<CT_Tc> other)
         m_cell->m_tc->copyCt(top_tc);
     }
 
-    top_tc->m_cell->addParagraph();
+    if(isAddParagraph)
+        top_tc->m_cell->addParagraph();
     return top_tc;
 }
 

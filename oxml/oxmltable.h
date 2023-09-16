@@ -58,6 +58,7 @@ private:
     QDomDocument *m_dom;    
     QDomElement m_tblStyle;
     QDomElement m_jcAlignment;
+    QDomElement m_border;
     QMap<WD_TABLE_ALIGNMENT, QString> m_aligns;
 };
 
@@ -86,7 +87,7 @@ class CT_Tc
 {
 public:    
     CT_Tc(Cell *cell, const QDomElement &ele);
-    CT_Tc *merge(QSharedPointer<CT_Tc> other);
+    CT_Tc *merge(QSharedPointer<CT_Tc> other, bool isAddParagraph = true);
     QDomElement ele() const;
     QString vMerge() const;
     void loadExistStyle();

@@ -25,6 +25,7 @@ public:
     Cell* cell(int rowIndex, int colIndex);
     Row* addRow();    
     Column* addColumn();
+    Cell *merge(int startRowIdx, int startColIdx, int endRowIdx, int endColIdx);
     QList<Cell*> rowCells(int rowIndex);
     QList<Row *> rows();    
     void setStyle(const QString &style);
@@ -49,7 +50,7 @@ public:
     Paragraph *addParagraph(const QString &text = QString(), const QString &style = QString());
     void addText(const QString &text);
     Table *addTable(int rows, int cols, const QString &style = QString::fromLatin1("TableGrid"));
-    Cell *merge(Cell *other);
+    Cell *merge(Cell *other, bool isAddParagraph = true);
     int cellIndex();
     int rowIndex();
     Table *table();

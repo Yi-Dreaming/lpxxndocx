@@ -1,15 +1,17 @@
 #include(../simcube.pri)
 
-QT -= gui
-QT += xml gui-private
-
-TARGET = docxlib
-TEMPLATE = lib
+QT += gui core xml gui-private
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+#TARGET = docxlib
+#TEMPLATE = lib
+TARGET = DocxTest
+TEMPLATE = app
 
 DEFINES += DOCX_LIBRARY
 
 SOURCES += \
     document.cpp \
+    main.cpp \
     shared.cpp \
     text.cpp \
     #blkcntnr.cpp \

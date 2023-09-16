@@ -42,7 +42,7 @@ public:
 
     virtual ~Paragraph();
 
-private:
+public:
     DocumentPart *m_part;
     QDomDocument *m_dom;
     QDomElement *m_pEle;

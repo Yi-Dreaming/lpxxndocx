@@ -6,6 +6,7 @@
 #include <QString>
 #include <QList>
 #include <QMap>
+#include<QIODevice>
 
 namespace Docx {
 

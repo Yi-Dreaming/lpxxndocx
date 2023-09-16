@@ -69,7 +69,10 @@ Paragraph *Document::addHeading(const QString &text, int level)
     if (level == 0)
         style = "Title";
     else
-        style = QString("Heading%1").arg(level);
+    {
+//        style = QString("Heading %1").arg(level);// 在自己的笔记本上测试，此句并不能生成标题
+        style = QString("%1").arg(level); // 改成这句就可以生成标题
+    }
     return addParagraph(text, style);
 }
 
