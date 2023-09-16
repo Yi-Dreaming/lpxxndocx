@@ -78,6 +78,7 @@ Cell *Table::merge(int startRowIdx, int startColIdx, int endRowIdx, int endColId
             firstMergeCell = mergecell;
         else
         {
+            mergecell->addParagraph();// 每一行合并完成后的单元格要添加一个空段落
             if(hasAddParagraph)
             firstMergeCell = firstMergeCell->merge(mergecell, false);
             else
@@ -87,6 +88,8 @@ Cell *Table::merge(int startRowIdx, int startColIdx, int endRowIdx, int endColId
             }
         }
     }
+//    if(firstMergeCell != cell(startRowIdx, startColIdx))
+        firstMergeCell->addParagraph(); // 合并完成后的单元格要添加一个空段落
     return firstMergeCell;
 }
 Table::~Table()
@@ -118,7 +121,7 @@ Row *Table::addRow()
     Row *row = new Row(rowEle, this);
     m_rows.append(row);
     for (int i = 0; i< m_ctTbl->m_tblGrid->count(); i++) {
-        row->addTc();
+        row->addTc();// 添加单元格
     }
     m_ctTbl->m_tblEle.appendChild(rowEle);
     return row;
@@ -249,17 +252,17 @@ void Row::addTc()
     tcW.setAttribute("w:type","dxa");
     tcPr.appendChild(tcW);
     QDomElement vAlign = m_dom->createElement("w:vAlign");
+
     vAlign.setAttribute("w:val","center"); // 表格的单元格垂直居中
     tcPr.appendChild(vAlign);
     celEle.appendChild(tcPr);
 
-    // 不加这两句的话，可能会提示文件格式不正确，如果加上这两句在调用table.cell.addText后，单元格内多出一段换行
-//    QDomElement wp = m_dom->createElement("w:p");
-//    celEle.appendChild(wp);
+    QDomElement wp = m_dom->createElement("w:p");
+    celEle.appendChild(wp);
 
     Cell *cell = new Cell(celEle, this);
-    cell->addParagraph();
     m_cells.append(cell);
+    cell->m_valign = vAlign;
     m_ele.appendChild(celEle);
 }
 
@@ -295,13 +298,17 @@ Cell::Cell(const QDomElement &element, Row *row)
     m_part = row->m_part;
     m_tc = QSharedPointer<CT_Tc>(new CT_Tc(this, element));
     if (!m_tc->m_isLoad)
+    {
+//        qDebug()<<"11111111";
         addParagraph();
+    }
     else {
         QDomNode node = element.lastChild();
         if (!node.isNull() && node.nodeName() == QStringLiteral("w:p")) {
             QDomElement pEle = node.toElement();
             m_currentpara = new Paragraph(m_part, pEle);
             m_paras.append(m_currentpara);
+//            qDebug()<<"Cell构造函数:"<<m_currentpara;
         }
     }
 }
@@ -320,21 +327,27 @@ Paragraph *Cell::addParagraph(const QString &text, const QString &style)
     return m_currentpara;
 }
 
-void Cell::addText(const QString &text)
+/**
+ * @brief Cell::addText
+ * @param text
+ * @param halign center、left、right、
+ * @param valign center、bottom、top
+ */
+void Cell::addText(const QString &text,QString halign, QString valign)
 {
-
     // 设置单元格无缩进，且水平居中
-//    QDomElement wpPr = m_dom->createElement("w:pPr");
-//    QDomElement wind = m_dom->createElement("w:ind");
-//    wind.setAttribute("w:firstLineChars","0");
-//    wind.setAttribute("w:firstLine","0");
-//    wpPr.appendChild(wind);
-//    QDomElement wjc = m_dom->createElement("w:jc");
-//    wjc.setAttribute("w:val", "center");
-//    wpPr.appendChild(wjc);
-//    m_currentpara->m_pEle->appendChild(wpPr);
+    QDomElement wpPr = m_dom->createElement("w:pPr");
+    QDomElement wind = m_dom->createElement("w:ind");
+    wind.setAttribute("w:firstLineChars","0");
+    wind.setAttribute("w:firstLine","0");
+    wpPr.appendChild(wind);
+    QDomElement wjc = m_dom->createElement("w:jc");
+    wjc.setAttribute("w:val", halign);
+    wpPr.appendChild(wjc);
+    m_currentpara->m_pEle->appendChild(wpPr);
 
-    qDebug()<<m_currentpara;
+    m_valign.setAttribute("w:val",valign); // 表格的单元格垂直居中;
+    qDebug()<<"addText:m_currentpara:"<<m_currentpara;
     m_currentpara->addRun(text);
 }
 

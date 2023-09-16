@@ -48,7 +48,7 @@ class DOCX_EXPORT Cell
 public:
     Cell(const QDomElement &element, Row *row);
     Paragraph *addParagraph(const QString &text = QString(), const QString &style = QString());
-    void addText(const QString &text);
+    void addText(const QString &text, QString halign=QString("center"), QString valign=QString("center"));
     Table *addTable(int rows, int cols, const QString &style = QString::fromLatin1("TableGrid"));
     Cell *merge(Cell *other, bool isAddParagraph = true);
     int cellIndex();
@@ -56,12 +56,13 @@ public:
     Table *table();
     virtual ~Cell();
 
-private:
+public:
     QDomDocument *m_dom;
     DocumentPart *m_part;    
     QList<Paragraph *> m_paras;
     Paragraph *m_currentpara;
-    Row *m_row;    
+    Row *m_row;
+        QDomElement m_valign;
     QSharedPointer<CT_Tc> m_tc;
     friend class CT_Tc;
     friend class Row;

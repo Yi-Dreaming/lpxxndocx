@@ -228,6 +228,7 @@ CT_Tc * CT_Tc::merge(QSharedPointer<CT_Tc> other, bool isAddParagraph)
     int top, left, height, width;
     spanDimensions(other, top, left, height, width);
     Table *table = m_cell->table();
+//    qDebug()<<"top:"<<top<<"left:"<<left;
     Cell *cell = table->cell(top, left);
     CT_Tc *top_tc = cell->m_tc.data();
     top_tc->growTo(width, height);
@@ -582,15 +583,16 @@ void CT_Tc::moveContentTo(CT_Tc *top_tc)
     int i = 0;
     QDomNodeList nodes = m_ele.childNodes();
     int count = nodes.count() - 1;
-    qDebug() << "nodes count : " << count;
+//    qDebug() << "nodes count : " << count;
     QDomNode firstN = m_ele.firstChild();
     if (firstN.nodeName() == QStringLiteral("w:tcPr"))
         i = 1;
     for (; i <= count; count--)
-        top_tc->m_ele.appendChild(nodes.at(count));
+//        top_tc->m_ele.appendChild(nodes.at(count)); // 此处改动（只用于空单元格的合并）：不将单元格的内容合并到一块，合并完成后的大单元格在添加空段落即可
 
     // add back the required minimum single empty <w:p> element
     m_cell->addParagraph();
+//    qDebug()<<"moveContentTo:"<<m_cell->m_currentpara<<"Cell:"<<m_cell;
 }
 
 /*!

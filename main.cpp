@@ -24,8 +24,12 @@ int main(int argc, char *argv[])
         auto table = doc.addTable(rowCount,9,"auto");
 
         table->setAlignment(Docx::WD_TABLE_ALIGNMENT::CENTER); // 设置表格在文档中居中
+//        table->cell(0,0)->addText(QString::fromLocal8Bit("型号"));
         auto cell1 = table->merge(0,0,1,1);
-        cell1->addText(QString::fromLocal8Bit("型号"));
+        qDebug()<<"cell1:"<<cell1<<"cell1.m_currentpara"<<cell1->m_currentpara;
+        cell1->addText(QString::fromLocal8Bit("型号"),"left");
+        table->cell(0,2)->addText(QString::fromLocal8Bit("版本"),"center","top");
+
 // todo 实现单元格的对齐方式
 
         table->merge(0,3,0,6);
