@@ -85,15 +85,38 @@ InlineShape *Document::addPicture(const QString &imgPath, const Length &width, c
 {
     Q_ASSERT_X(QFile::exists(imgPath), "add image filed", "can not find the Image path!");
 
-    Run *run = addParagraph()->addRun();
+    // 去掉图片左侧的缩进
+    auto para= addParagraph();
+    QDomElement wpPr = m_docPart->m_dom->createElement("w:pPr");
+    QDomElement wind = m_docPart->m_dom->createElement("w:ind");
+    wind.setAttribute("w:firstLineChars","0");
+    wind.setAttribute("w:firstLine","0");
+    wpPr.appendChild(wind);
+    //设置居中对齐
+    QDomElement wjc = m_docPart->m_dom->createElement("w:jc");
+    wjc.setAttribute("w:val", "center");
+    wpPr.appendChild(wjc);
+    para->m_pEle->appendChild(wpPr);
+    Run *run = para->addRun();
     InlineShape *picture = run->addPicture(imgPath, width, height);
-
     return picture;
 }
 
 InlineShape *Document::addPicture(const QImage &img, const Length &width, const Length &height)
 {
-    Run *run = addParagraph()->addRun();
+    // 去掉图片左侧的缩进
+    auto para= addParagraph();
+    QDomElement wpPr = m_docPart->m_dom->createElement("w:pPr");
+    QDomElement wind = m_docPart->m_dom->createElement("w:ind");
+    wind.setAttribute("w:firstLineChars","0");
+    wind.setAttribute("w:firstLine","0");
+    wpPr.appendChild(wind);
+    //设置居中对齐
+    QDomElement wjc = m_docPart->m_dom->createElement("w:jc");
+    wjc.setAttribute("w:val", "center");
+    wpPr.appendChild(wjc);
+    para->m_pEle->appendChild(wpPr);
+    Run *run = para->addRun();
     InlineShape *picture = run->addPicture(img, width, height);
 
     return picture;

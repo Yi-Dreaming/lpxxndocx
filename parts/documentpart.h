@@ -42,7 +42,7 @@ private:
     void findAttributes(const QDomNodeList &eles, const QString &attr, QList<QString> *nums);
     QDomNode lastsectPr() const;
 
-private:
+public:
     //Body *m_body;
     QDomDocument *m_dom;
     InlineShapes *m_inlineshapes;

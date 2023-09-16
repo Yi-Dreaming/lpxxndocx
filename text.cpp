@@ -185,8 +185,18 @@ InlineShape *Run::addPicture(const QString &path, const Length &width, const Len
 {
     InlineShapes *ships = m_part->m_inlineshapes;
     InlineShape *picture = ships->addPicture(path, this);
-    return scalePicture(picture, width, height);
-
+    if(picture->width().emu() < 5280000)// 经测试A4默认页面内容的宽度为5280000
+    {
+        return picture;
+    }
+    else
+    {
+        //开始缩放
+        Length width1 = Length(5280000);
+        double hei = 5280000.0/picture->width().emu()*picture->height().emu();
+        Length height1 = Length(hei);
+        return scalePicture(picture, width1, height1);
+    }
 }
 
 InlineShape *Run::scalePicture(InlineShape *picture, const Length &width, const Length &height)
@@ -197,6 +207,7 @@ InlineShape *Run::scalePicture(InlineShape *picture, const Length &width, const 
 
         int native_width = picture->width().emu();
         int native_height = picture->height().emu();
+        qDebug()<<"width:"<<native_width<<"height:"<<native_height;
         if (width.isEmpty()) {
             float scaling_factor = float(lheight) / float(native_height);
             lwidth = int(round(native_width * scaling_factor));
@@ -215,7 +226,19 @@ InlineShape *Run::addPicture(const QImage &img, const Length &width, const Lengt
 {
     InlineShapes *ships = m_part->m_inlineshapes;
     InlineShape *picture = ships->addPicture(img, this);
-    return scalePicture(picture, width, height);
+    if(picture->width().emu() < 5280000) // 经测试A4默认页面内容的宽度为5280000
+    {
+        return picture;
+    }
+    else
+    {
+        //开始缩放
+        Length width1 = Length(5280000);
+        double hei = 5280000.0/picture->width().emu()*picture->height().emu();
+        Length height1 = Length(hei);
+        return scalePicture(picture, width1, height1);
+    }
+
 }
 
 /*!
